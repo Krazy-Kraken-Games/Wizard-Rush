@@ -13,23 +13,37 @@ namespace KrazyKrakenGames.LearningNetcode
             networkManager = GetComponent<NetworkManager>();
         }
 
+        private void Start()
+        {
+            networkManager.OnClientConnectedCallback += OnClientConnectedCallback;
+        }
+
+        private void OnDestroy()
+        {
+            networkManager.OnClientConnectedCallback -= OnClientConnectedCallback;
+        }
+
+        private void OnClientConnectedCallback(ulong obj)
+        {
+            Debug.Log($"Connected client {obj}");
+        }
+
         private void OnGUI()
         {
             GUILayout.BeginArea(new Rect(10, 10, 300, 300));
 
-            if(!networkManager.IsClient && !networkManager.IsServer)
-            {
-                //They are not connected to the network, either as client or server
-                StartButtons();
-            }
-            else
-            {
-                //They are connected to the network in some form
-                StatusLabels();
-                SubmitNewPosition();
+            //if(!networkManager.IsClient && !networkManager.IsServer)
+            //{
+            //    //They are not connected to the network, either as client or server
+            //    //StartButtons();
+            //}
+            //else
+            //{
+            //    //They are connected to the network in some form
+            //    StatusLabels();
 
-                DisconnectButtons();
-            }
+            //    DisconnectButtons();
+            //}
 
             GUILayout.EndArea();
         }

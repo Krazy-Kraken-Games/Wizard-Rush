@@ -35,6 +35,12 @@ namespace KrazyKrakenGames.LearningNetcode
         private void Update()
         {
             //transform.position = Position.Value;
+
+            //float horizontal = Input.GetAxis("Horizontal");
+
+            //Vector3 nextPostion = new Vector3(transform.position.x, transform.position.y, transform.position.z + horizontal);
+
+            //transform.position = Vector3.MoveTowards(transform.position, nextPostion,1f);
         }
     }
 }
