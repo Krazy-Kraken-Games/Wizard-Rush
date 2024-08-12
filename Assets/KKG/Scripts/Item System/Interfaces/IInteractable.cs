@@ -9,6 +9,6 @@ namespace KrazyKrakenGames.Interfaces.Objects
     public interface IInteractable
     {
         // Method to be used to interact
-        void Interact(GameObject initiator);
+        void Interact(ulong initiatorID);
     }
 }

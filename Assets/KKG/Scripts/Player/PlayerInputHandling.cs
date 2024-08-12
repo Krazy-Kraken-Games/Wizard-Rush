@@ -1,13 +1,23 @@
 using KrazyKrakenGames.Interactables;
+using KrazyKrakenGames.Interfaces.Objects;
+using System;
+using Unity.Netcode;
 using UnityEngine;
 
-public class PlayerInputHandling : MonoBehaviour
+public class PlayerInputHandling : NetworkBehaviour
 {
     [SerializeField] private BaseInteractableObject interactableObject;
 
-    [SerializeField] private Transform holderTransform;
+    [SerializeField] private GameObject nearByStation;
+
+    public Action<BaseInteractableObject> OnInteractButtonFired;
+    public Action<GameObject> OnActionEventHandler;
+
+    [SerializeField] private PickUpHolder pickUpHolder;
     private void Update()
     {
+        if (!IsOwner) return;
+
         Interaction();
     }
 
@@ -15,15 +25,80 @@ public class PlayerInputHandling : MonoBehaviour
     {
         if (Input.GetKeyDown(KeyCode.E))
         {
-            if(interactableObject!= null)
-            {
-                interactableObject.Interact(holderTransform.gameObject);
-            }
+            //Pick up and Drop
+            pickUpHolder.OnPickUpInitiated(interactableObject);
+        }
+
+        if (Input.GetKeyDown(KeyCode.F))
+        {
+            //Action Key?
+            OnActionEventHandler?.Invoke(nearByStation);
         }
     }
 
     public void SetInteractionObject(BaseInteractableObject _object)
     {
         interactableObject = _object;
+    }
+
+    private void OnTriggerEnter(Collider other)
+    {
+        var collided = other.gameObject;
+
+        if(collided.tag == "TriggerBox")
+        {
+            if(collided.TryGetComponent<TriggerBox>(out var triggerBox))
+            {
+                if (triggerBox != null && triggerBox.InteractableObject != null)
+                {
+                    interactableObject = triggerBox.InteractableObject;
+                }
+                else if(triggerBox != null && triggerBox.Triggerable != null)
+                {
+                    nearByStation = triggerBox.Triggerable;
+                }
+            }
+        }
+    }
+
+    private void OnTriggerStay(Collider other)
+    {
+        var collided = other.gameObject;
+
+        if(other == null)
+        {
+            Debug.Log($"{gameObject.name} is not touching any colliders");
+            interactableObject = null;
+        }
+
+        if(collided.tag == "TriggerBox")
+        {
+            if (collided.TryGetComponent<TriggerBox>(out var triggerBox))
+            {
+                if (triggerBox != null && triggerBox.InteractableObject != null)
+                {
+                    interactableObject = triggerBox.InteractableObject;
+                }
+                else if(triggerBox != null && triggerBox.Triggerable != null)
+                {
+                    nearByStation = triggerBox.Triggerable;
+                }
+            }
+        }
+        else
+        {
+            interactableObject = null;
+        }
+    }
+
+    private void OnTriggerExit(Collider other)
+    {
+        var collided = other.gameObject;
+
+        if (collided.tag == "TriggerBox")
+        {
+            interactableObject = null;
+            nearByStation = null;
+        }
     }
 }

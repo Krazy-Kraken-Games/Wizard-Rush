@@ -3,14 +3,25 @@ using UnityEngine;
 
 namespace KrazyKrakenGames.LearningNetcode
 {
-    public class HelloWorldManager : MonoBehaviour
+    public class NetGameManager : MonoBehaviour
     {
+        public static NetGameManager instance = null;
+
         [SerializeField] private NetworkManager networkManager;
 
 
         private void Awake()
         {
             networkManager = GetComponent<NetworkManager>();
+
+            if(instance == null)
+            {
+                instance = this;
+            }
+            else
+            {
+                Destroy(gameObject);
+            }
         }
 
         private void Start()
@@ -32,18 +43,18 @@ namespace KrazyKrakenGames.LearningNetcode
         {
             GUILayout.BeginArea(new Rect(10, 10, 300, 300));
 
-            //if(!networkManager.IsClient && !networkManager.IsServer)
-            //{
-            //    //They are not connected to the network, either as client or server
-            //    //StartButtons();
-            //}
-            //else
-            //{
-            //    //They are connected to the network in some form
-            //    StatusLabels();
+            if (!networkManager.IsClient && !networkManager.IsServer)
+            {
+                //They are not connected to the network, either as client or server
+                StartButtons();
+            }
+            else
+            {
+                //They are connected to the network in some form
+                StatusLabels();
 
-            //    DisconnectButtons();
-            //}
+                DisconnectButtons();
+            }
 
             GUILayout.EndArea();
         }
@@ -92,6 +103,17 @@ namespace KrazyKrakenGames.LearningNetcode
                 var player = playerObject.GetComponent<HelloWorldPlayer>();
                 player.Move();
             }
+        }
+
+
+        //Singleton Methods
+        public NetworkObject GetNetworkObjectById(ulong initiatorID)
+        {
+            NetworkManager.Singleton.
+                SpawnManager.SpawnedObjects.
+                TryGetValue(initiatorID, out var initiator);
+
+            return initiator;
         }
     }
 }

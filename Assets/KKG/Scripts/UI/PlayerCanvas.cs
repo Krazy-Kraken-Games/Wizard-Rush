@@ -12,9 +12,16 @@ namespace KrazyKrakenGames.UI
     {
         [SerializeField] private TextMeshProUGUI playerNameText;
 
+        [SerializeField] private TextMeshProUGUI pickedStatus;
+
         public void PopulateDisplay(PlayerData _data)
         {
             playerNameText.text = _data.playerName.ToString();
+        }
+
+        public void PopulateObjectPick(string objectName)
+        {
+            pickedStatus.text = objectName;
         }
     }
 }

@@ -13,12 +13,12 @@ GameObject:
   - component: {fileID: 1302800664433199335}
   - component: {fileID: 2607574920981325142}
   - component: {fileID: 7539260458256443558}
-  - component: {fileID: 844695685732773856}
   - component: {fileID: 7440176797165417799}
   - component: {fileID: 8881293971575895321}
   - component: {fileID: 50511133517689095}
+  - component: {fileID: 2134891118771938380}
   m_Layer: 0
-  m_Name: InteractableObject
+  m_Name: IngredientDummy
   m_TagString: Interactable
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
@@ -123,7 +123,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: d5a57f767e5e46a458fc5d3c628d0cbb, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  GlobalObjectIdHash: 4037723993
+  GlobalObjectIdHash: 4061917382
   InScenePlacedSourceGlobalObjectIdHash: 0
   AlwaysReplicateAsRoot: 0
   SynchronizeTransform: 1
@@ -132,22 +132,6 @@ MonoBehaviour:
   SpawnWithObservers: 1
   DontDestroyWithOwner: 0
   AutoObjectParentSync: 1
---- !u!114 &844695685732773856
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 688608339524085618}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: a50ce11f8761c4449b720541e7cc22e7, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: 
-  State:
-    m_InternalValue: 0
-  objectName: Wolfsbane
-  isPicked: 0
 --- !u!54 &7440176797165417799
 Rigidbody:
   m_ObjectHideFlags: 0
@@ -218,6 +202,25 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: f6c0be61502bb534f922ebb746851216, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
+--- !u!114 &2134891118771938380
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 688608339524085618}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 05e8b1613d7055745b310d30246f110f, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  State:
+    m_InternalValue: 0
+  objectName: Lazarus
+  isPicked: 0
+  type: 0
+  networkType:
+    m_InternalValue: 1
 --- !u!1001 &4951181473973380451
 PrefabInstance:
   m_ObjectHideFlags: 0
@@ -276,11 +279,6 @@ PrefabInstance:
       propertyPath: m_LocalEulerAnglesHint.z
       value: 0
       objectReference: {fileID: 0}
-    - target: {fileID: 8088528493963271417, guid: d5efcc6240b11b84fa7d5ea6a0e3bfe7,
-        type: 3}
-      propertyPath: interactableObject
-      value: 
-      objectReference: {fileID: 844695685732773856}
     - target: {fileID: 8754335293544121283, guid: d5efcc6240b11b84fa7d5ea6a0e3bfe7,
         type: 3}
       propertyPath: m_Name

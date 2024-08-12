@@ -6,10 +6,6 @@ using UnityEngine;
 public class NetworkPlayerMonkey : NetworkBehaviour
 {
     [SerializeField]
-    private NetworkVariable<int> randomNumber
-        = new NetworkVariable<int>(1, NetworkVariableReadPermission.Everyone, NetworkVariableWritePermission.Owner);
-
-    [SerializeField]
     private NetworkVariable<PlayerData> currentPlayerData
         = new NetworkVariable<PlayerData>(new PlayerData
             {
@@ -29,31 +25,12 @@ public class NetworkPlayerMonkey : NetworkBehaviour
     [SerializeField] private GameObject model;
 
 
+
     private void Update()
     {
-        ShowValues();
-
         if (!IsOwner) return;
 
         Move();
-
-        RandomTest();
-    }
-
-    private void RandomTest()
-    {
-        if (Input.GetKeyDown(KeyCode.T))
-        {
-            randomNumber.Value += 1;
-        }
-    }
-
-    private void ShowValues()
-    {
-        if (Input.GetKeyDown(KeyCode.F))
-        {
-            Debug.Log($"{OwnerClientId} : Value: {randomNumber.Value}");
-        }
     }
 
     private void Locomotion()

@@ -9,8 +9,8 @@ namespace KrazyKrakenGames.Interfaces.Objects
     /// </summary>
     public interface IPickable
     {
-        void Pick(Transform parent);
+        void Pick(ulong initiatorID);
 
-        void Drop();
+        void Drop(ulong initiatorID, Vector3 dropLocation);
     }
 }

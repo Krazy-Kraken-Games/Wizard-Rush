@@ -1,51 +1,104 @@
 using KrazyKrakenGames.Interfaces.Objects;
-using TMPro;
+using KrazyKrakenGames.LearningNetcode;
+using System;
+using Unity.Netcode;
 using UnityEngine;
 
 namespace KrazyKrakenGames.Interactables
 {
+    [Serializable]
+    public enum ObjectState
+    {
+        DROP = 0,
+        PICK = 1
+    }
+
     /// <summary>
     /// A base interactable object class to hold interact with
     /// </summary>
-    public class BaseInteractableObject : MonoBehaviour, IInteractable,IPickable
+    public class BaseInteractableObject : NetworkBehaviour, 
+        IInteractable,IPickable, ITriggerable
     {
+        public GameObject GameObject => gameObject;
+
+        [SerializeField] protected NetworkVariable<ObjectState> State =
+            new NetworkVariable<ObjectState>(ObjectState.DROP
+                ,NetworkVariableReadPermission.Everyone,
+                NetworkVariableWritePermission.Server);
+
         public string objectName;
-        public bool isPicked = false;
+        [SerializeField] protected bool isPicked = false;
 
-        private Rigidbody rb;
-
-        private void Start()
+        public override void OnNetworkSpawn()
         {
-            rb = GetComponent<Rigidbody>();
+            State.OnValueChanged += OnStateValueChanged;
         }
 
-        public virtual void Interact(GameObject initiator)
+        public override void OnNetworkDespawn()
         {
-            Debug.Log($"{objectName} is interacted with");
-
-            if (isPicked)
-                Drop();
-            else
-                Pick(initiator.transform);
+            State.OnValueChanged -= OnStateValueChanged;
         }
 
-        public void Pick(Transform parent)
+        private void OnStateValueChanged(ObjectState prev, ObjectState curr)
         {
-            isPicked = true;
-            transform.position = parent.position;
-            transform.SetParent(parent);
-
-            rb.useGravity = false;
-            rb.isKinematic = true;
+            if(curr == ObjectState.DROP)
+            {
+                gameObject.SetActive(true);
+            }
+            else if(curr == ObjectState.PICK)
+            {
+                gameObject.SetActive(false);
+            }
         }
 
-        public void Drop()
+        public virtual void Interact(ulong initiatorID)
         {
-            isPicked = false;
-            transform.SetParent(null);
+            Debug.Log($"{objectName} is interacted with by {initiatorID}");
 
-            rb.useGravity = true;
-            rb.isKinematic = false;
+            if(State.Value == ObjectState.DROP)
+            {
+                //Then object can be picked
+                Pick(initiatorID);
+            }
+        }
+
+        public void Pick(ulong initiatorID)
+        {
+            PickServerRpc(initiatorID);
+        }
+
+        [ServerRpc(RequireOwnership = false)]
+        public void PickServerRpc(ulong initiatorID)
+        {
+            PickRpcHelper(initiatorID);
+        }
+
+        protected virtual void PickRpcHelper(ulong initiatorID)
+        {
+            var initiator = NetGameManager.instance.GetNetworkObjectById(initiatorID);
+
+            var picker = initiator.gameObject.GetComponent<PickUpHolder>();
+            picker.SetPickedObject(objectName);
+
+            State.Value = ObjectState.PICK;
+        }
+
+        public void Drop(ulong initiatorID,Vector3 dropLocation)
+        {
+            DropServerRpc(initiatorID, dropLocation);
+        }
+
+        [ServerRpc(RequireOwnership = false)]
+        public void DropServerRpc(ulong initiatorID,Vector3 dropLocation)
+        {
+            transform.position = dropLocation;
+            var initiator = NetGameManager.instance.GetNetworkObjectById(initiatorID);
+
+            var picker = initiator.gameObject.GetComponent<PickUpHolder>();
+            picker.DropPickedObjectServerRpc();
+
+            State.Value = ObjectState.DROP;
+           
         }
     }
 }

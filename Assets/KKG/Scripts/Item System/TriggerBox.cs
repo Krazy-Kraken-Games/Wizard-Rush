@@ -5,24 +5,34 @@ public class TriggerBox : MonoBehaviour
 {
     [SerializeField] private BaseInteractableObject interactableObject;
 
-    private void OnTriggerEnter(Collider other)
-    {
-        var collided = other.gameObject;
+    [SerializeField] private ITriggerable triggerable;
 
-        if(collided.tag == "Player")
+    public BaseInteractableObject InteractableObject 
+        => triggerable.GameObject.GetComponent<BaseInteractableObject>();
+
+    public GameObject Triggerable => triggerable.GameObject;
+
+    private void Start()
+    {
+        var parent = transform.parent.gameObject;
+
+        //if(parent.TryGetComponent<BaseInteractableObject>(out interactableObject))
+        //{
+        //    Debug.Log("Interactable object found");
+        //}
+        //else
+        //{
+        //    Debug.LogWarning($"{gameObject.name} doesnt have an interactable object"); ;
+        //}
+
+        if(parent.TryGetComponent<ITriggerable>(out triggerable))
         {
-            collided.GetComponent<PlayerInputHandling>().
-                SetInteractionObject(interactableObject);
+            Debug.Log("Triggerable interface found", parent);
+        }
+        else
+        {
+            Debug.LogWarning("No triggerable interface found too");
         }
     }
-    private void OnTriggerExit(Collider other)
-    {
-        var collided = other.gameObject;
 
-        if (collided.tag == "Player")
-        {
-            collided.GetComponent<PlayerInputHandling>().
-                SetInteractionObject(null);
-        }
-    }
 }
