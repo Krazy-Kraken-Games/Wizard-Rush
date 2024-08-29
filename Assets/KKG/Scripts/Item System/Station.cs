@@ -18,20 +18,34 @@ public class Station : NetworkBehaviour, ITriggerable, IStoring
           NetworkVariableReadPermission.Everyone,
           NetworkVariableWritePermission.Server);
 
+    [SerializeField]
+    public NetworkList<IngredientData> currentIngredients;
+
     //Dummy will be removed when actual ingredient data structure is created
     [SerializeField] private string IngredientNameTest;
 
     [SerializeField] private StationCanvas stationCanvas;
 
+    void Awake()
+    {
+        //NetworkList can't be initialized at declaration time like NetworkVariable. It must be initialized in Awake instead.
+        //If you do initialize at declaration, you will run into memory leak errors.
+        currentIngredients = new NetworkList<IngredientData>();
+    }
+
     //Move start and destroy content to On Network Spawns when actually spawning occurs on network
     public override void OnNetworkSpawn()
     {
         addedIngredient.OnValueChanged += OnAddedIngredientChange;
+
+        currentIngredients.OnListChanged += OnIngredientListChanged;
     }
 
     public override void OnNetworkDespawn()
     {
         addedIngredient.OnValueChanged -= OnAddedIngredientChange;
+
+        currentIngredients.OnListChanged -= OnIngredientListChanged;
     }
 
     public void AddItem(FixedString128Bytes item, ulong feederID, ulong itemID)
@@ -48,6 +62,9 @@ public class Station : NetworkBehaviour, ITriggerable, IStoring
             ingredientName = item,
             gameObjectID = itemID,   
         };
+
+        //Adding it to list of ingredients
+        currentIngredients.Add(addedIngredient.Value);
 
         //Make holder drop the item
         var feederObj = 
@@ -70,6 +87,17 @@ public class Station : NetworkBehaviour, ITriggerable, IStoring
         if (stationCanvas != null)
         {
             stationCanvas.PopulateIngredient(curr.ingredientName.ToString());
+        }
+       
+    }
+
+    private void OnIngredientListChanged(NetworkListEvent<IngredientData> ingredientChange)
+    {
+        Debug.Log($"Current Ingredient added: {ingredientChange.Value.ingredientName.ToString()}");
+
+        if (stationCanvas != null)
+        {
+            stationCanvas.PopulateIngredient(currentIngredients.Count.ToString());
         }
     }
 }

@@ -27,6 +27,7 @@ namespace KrazyKrakenGames.Interactables
                 ,NetworkVariableReadPermission.Everyone,
                 NetworkVariableWritePermission.Server);
 
+        //Turn this to use data from scriptable object
         public string objectName;
 
         public override void OnNetworkSpawn()
