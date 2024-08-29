@@ -4,7 +4,7 @@ using Unity.Collections;
 using Unity.Netcode;
 using UnityEngine;
 
-public class Station : NetworkBehaviour, ITriggerable, IStoring
+public class Station : NetworkBehaviour, ITriggerable, IStoring, ICooking
 {
     public GameObject GameObject => gameObject;
 
@@ -111,4 +111,29 @@ public class Station : NetworkBehaviour, ITriggerable, IStoring
 
         stationCanvas.PopulateIngredient(ingredientList);
     }
+
+    #region Cookable Interface Handling
+    public void CheckIngredients()
+    {
+        //Logic will be added later
+    }
+
+    public void Cook()
+    {
+        //Check the ingredients
+        CheckIngredients();
+
+        CookOnServerRpc();
+    }
+
+    [ServerRpc(RequireOwnership = false)]
+    private void CookOnServerRpc()
+    {
+        if (currentIngredients.Count > 0)
+        {
+            Debug.Log("Cook with the ingredients we have!");
+        }
+    }
+
+    #endregion
 }

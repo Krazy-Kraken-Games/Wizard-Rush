@@ -165,6 +165,14 @@ public class PickUpHolder : NetworkBehaviour
                 NetworkObjectId,
                 heldObject.Value.gameObjectID);
         }
+        else
+        {
+            //The player isnt carrying anything, it wants to trigger cook on the station
+            Debug.Log("Initiate cooking?");
+
+            var cookingStation = nearByStation.GetComponent<ICooking>();
+            cookingStation.Cook();
+        }
     }
 
     public void OnPlayerInteractionHandler(BaseInteractableObject interactionObject)
