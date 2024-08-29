@@ -95,9 +95,20 @@ public class Station : NetworkBehaviour, ITriggerable, IStoring
     {
         Debug.Log($"Current Ingredient added: {ingredientChange.Value.ingredientName.ToString()}");
 
-        if (stationCanvas != null)
+        PopulateUI();
+    }
+
+    private void PopulateUI()
+    {
+        if (stationCanvas == null) return;
+
+        string ingredientList = string.Empty;
+
+        foreach (var ingredient in currentIngredients)
         {
-            stationCanvas.PopulateIngredient(currentIngredients.Count.ToString());
+            ingredientList += $"{ingredient.ingredientName}\n";
         }
+
+        stationCanvas.PopulateIngredient(ingredientList);
     }
 }
