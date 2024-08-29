@@ -7,25 +7,24 @@ public class TriggerBox : MonoBehaviour
 
     [SerializeField] private ITriggerable triggerable;
 
-    public BaseInteractableObject InteractableObject 
-        => triggerable.GameObject.GetComponent<BaseInteractableObject>();
+    public BaseInteractableObject InteractableObject => interactableObject;
 
-    public GameObject Triggerable => triggerable.GameObject;
+    public GameObject Triggerable => triggerable?.GameObject;
 
     private void Start()
     {
         var parent = transform.parent.gameObject;
 
-        //if(parent.TryGetComponent<BaseInteractableObject>(out interactableObject))
-        //{
-        //    Debug.Log("Interactable object found");
-        //}
-        //else
-        //{
-        //    Debug.LogWarning($"{gameObject.name} doesnt have an interactable object"); ;
-        //}
+        if (parent.TryGetComponent<BaseInteractableObject>(out interactableObject))
+        {
+            Debug.Log("Interactable object found");
+        }
+        else
+        {
+            Debug.LogWarning($"{gameObject.name} doesnt have an interactable object"); ;
+        }
 
-        if(parent.TryGetComponent<ITriggerable>(out triggerable))
+        if (parent.TryGetComponent<ITriggerable>(out triggerable))
         {
             Debug.Log("Triggerable interface found", parent);
         }

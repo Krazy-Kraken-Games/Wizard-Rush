@@ -25,6 +25,8 @@ namespace KrazyKrakenGames.Interactables
         public void Store()
         {
             Debug.Log($"The base ingredient {objectName} will be stored");
+
+            State.Value = ObjectState.FEED;
         }
 
         protected override void PickRpcHelper(ulong initiatorID)

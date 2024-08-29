@@ -19,11 +19,16 @@ public class PickUpHolder : NetworkBehaviour
         NetworkState = new NetworkVariable<PickUpHolderState>(PickUpHolderState.HIDDEN,
             NetworkVariableReadPermission.Everyone,
             NetworkVariableWritePermission.Server);
+    private static readonly string empty = string.Empty;
 
     //Will be converted to using held object information
     [SerializeField]
-    private NetworkVariable<FixedString128Bytes> heldObject
-        = new NetworkVariable<FixedString128Bytes>(string.Empty,
+    private NetworkVariable<IngredientData> heldObject
+        = new NetworkVariable<IngredientData>(new IngredientData
+        {
+            ingredientName = "IngredientTest",
+            gameObjectID = 1000
+        },
             NetworkVariableReadPermission.Everyone,
             NetworkVariableWritePermission.Server);
 
@@ -156,7 +161,9 @@ public class PickUpHolder : NetworkBehaviour
             //Only feed ingredient if player is carrying an object
             Debug.Log("Submitting held object into the station");
             var storing = nearByStation.GetComponent<IStoring>();
-            storing.AddItem(heldObject.Value);
+            storing.AddItem(heldObject.Value.ingredientName,
+                NetworkObjectId,
+                heldObject.Value.gameObjectID);
         }
     }
 
@@ -173,7 +180,7 @@ public class PickUpHolder : NetworkBehaviour
     }
 
 
-    public void SetPickedObject(string pickedItem)
+    public void SetPickedObject(string pickedItem, ulong itemID)
     {
         Debug.Log($"{pickedItem} has been picked");
 
@@ -182,13 +189,13 @@ public class PickUpHolder : NetworkBehaviour
             Initialization();
         }
 
-        SetPickedObjectServerRpc(pickedItem);
+        SetPickedObjectServerRpc(pickedItem, itemID);
     }
 
     [ServerRpc(RequireOwnership = false)]
-    public void SetPickedObjectServerRpc(string pickedItem)
+    public void SetPickedObjectServerRpc(string pickedItem,ulong itemId)
     {
-        heldObject.Value = pickedItem;
+        heldObject.Value = new IngredientData { ingredientName = pickedItem , gameObjectID = itemId};
         hasObject.Value = true;
 
         NetworkState.Value = PickUpHolderState.VISIBLE;
@@ -197,7 +204,7 @@ public class PickUpHolder : NetworkBehaviour
     [ServerRpc(RequireOwnership = false)]
     public void DropPickedObjectServerRpc()
     {
-        heldObject.Value = new FixedString128Bytes();
+        heldObject.Value = new IngredientData { ingredientName = new FixedString128Bytes(), gameObjectID = 1000 };
         hasObject.Value = false;
 
         NetworkState.Value = PickUpHolderState.HIDDEN;
@@ -211,9 +218,9 @@ public class PickUpHolder : NetworkBehaviour
     }
 
 
-    private void OnHeldObjectChangedHandler(FixedString128Bytes prev, FixedString128Bytes curr)
+    private void OnHeldObjectChangedHandler(IngredientData prev, IngredientData curr)
     {
-        displayCanvas.PopulateObjectPick(curr.ToString());
+        displayCanvas.PopulateObjectPick(curr.ingredientName.ToString());
     }
 
 

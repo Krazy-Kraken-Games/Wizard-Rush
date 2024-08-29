@@ -10,7 +10,8 @@ namespace KrazyKrakenGames.Interactables
     public enum ObjectState
     {
         DROP = 0,
-        PICK = 1
+        PICK = 1,
+        FEED = 2 //Item feeded will never come back
     }
 
     /// <summary>
@@ -21,13 +22,12 @@ namespace KrazyKrakenGames.Interactables
     {
         public GameObject GameObject => gameObject;
 
-        [SerializeField] protected NetworkVariable<ObjectState> State =
+        public NetworkVariable<ObjectState> State =
             new NetworkVariable<ObjectState>(ObjectState.DROP
                 ,NetworkVariableReadPermission.Everyone,
                 NetworkVariableWritePermission.Server);
 
         public string objectName;
-        [SerializeField] protected bool isPicked = false;
 
         public override void OnNetworkSpawn()
         {
@@ -41,13 +41,18 @@ namespace KrazyKrakenGames.Interactables
 
         private void OnStateValueChanged(ObjectState prev, ObjectState curr)
         {
-            if(curr == ObjectState.DROP)
+            if (curr == ObjectState.DROP)
             {
                 gameObject.SetActive(true);
             }
-            else if(curr == ObjectState.PICK)
+            else if (curr == ObjectState.PICK)
             {
                 gameObject.SetActive(false);
+            }
+            else if (curr == ObjectState.FEED)
+            {
+                NetworkObject.Despawn(gameObject);
+                Destroy(gameObject);
             }
         }
 
@@ -78,7 +83,7 @@ namespace KrazyKrakenGames.Interactables
             var initiator = NetGameManager.instance.GetNetworkObjectById(initiatorID);
 
             var picker = initiator.gameObject.GetComponent<PickUpHolder>();
-            picker.SetPickedObject(objectName);
+            picker.SetPickedObject(objectName,NetworkObjectId);
 
             State.Value = ObjectState.PICK;
         }
@@ -99,6 +104,17 @@ namespace KrazyKrakenGames.Interactables
 
             State.Value = ObjectState.DROP;
            
+        }
+
+        public void Feed(ulong initiatorID)
+        {
+            FeedServerRpc();
+        }
+
+        [ServerRpc(RequireOwnership = false)]
+        private void FeedServerRpc()
+        {
+            State.Value = ObjectState.FEED;
         }
     }
 }

@@ -49,13 +49,20 @@ public class PlayerInputHandling : NetworkBehaviour
         {
             if(collided.TryGetComponent<TriggerBox>(out var triggerBox))
             {
-                if (triggerBox != null && triggerBox.InteractableObject != null)
+                if (triggerBox != null)
                 {
-                    interactableObject = triggerBox.InteractableObject;
-                }
-                else if(triggerBox != null && triggerBox.Triggerable != null)
-                {
-                    nearByStation = triggerBox.Triggerable;
+                    if (triggerBox.InteractableObject != null)
+                    {
+                        interactableObject = triggerBox.InteractableObject;
+                    }
+                    else if (triggerBox.Triggerable != null)
+                    {
+                        nearByStation = triggerBox.Triggerable;
+                    }
+                    else
+                    {
+                        Debug.Log("Both are empty, must be a spawner?");
+                    }
                 }
             }
         }
