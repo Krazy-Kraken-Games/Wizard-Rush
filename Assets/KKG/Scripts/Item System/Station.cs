@@ -1,5 +1,6 @@
 using KrazyKrakenGames.Interactables;
 using KrazyKrakenGames.LearningNetcode;
+using System.Collections;
 using Unity.Collections;
 using Unity.Netcode;
 using UnityEngine;
@@ -26,6 +27,12 @@ public class Station : NetworkBehaviour, ITriggerable, IStoring, ICooking
 
     [SerializeField] private StationCanvas stationCanvas;
 
+    //Cook handling
+    [SerializeField] private NetworkVariable<StationState> CookState
+        = new NetworkVariable<StationState>(StationState.READY,
+            NetworkVariableReadPermission.Everyone,
+            NetworkVariableWritePermission.Server);
+
     void Awake()
     {
         //NetworkList can't be initialized at declaration time like NetworkVariable. It must be initialized in Awake instead.
@@ -39,6 +46,8 @@ public class Station : NetworkBehaviour, ITriggerable, IStoring, ICooking
         addedIngredient.OnValueChanged += OnAddedIngredientChange;
 
         currentIngredients.OnListChanged += OnIngredientListChanged;
+
+        CookState.OnValueChanged += OnCookValueChangedHandler;
     }
 
     public override void OnNetworkDespawn()
@@ -46,6 +55,9 @@ public class Station : NetworkBehaviour, ITriggerable, IStoring, ICooking
         addedIngredient.OnValueChanged -= OnAddedIngredientChange;
 
         currentIngredients.OnListChanged -= OnIngredientListChanged;
+
+        CookState.OnValueChanged -= OnCookValueChangedHandler;
+
     }
 
     public void AddItem(FixedString128Bytes item, ulong feederID, ulong itemID)
@@ -132,7 +144,45 @@ public class Station : NetworkBehaviour, ITriggerable, IStoring, ICooking
         if (currentIngredients.Count > 0)
         {
             Debug.Log("Cook with the ingredients we have!");
+            CookState.Value = StationState.COOK;
+
+            //Give status the cooked item is ready
+            StartCooking();
         }
+    }
+
+    private void OnCookValueChangedHandler(StationState prev, StationState newState)
+    {
+        if (newState == StationState.COOK)
+        {
+            Debug.Log("On clients! Starting cook state");
+
+            if(stationCanvas != null)
+            {
+                stationCanvas.StationCooking(3f);
+            }
+        }
+        else if(newState == StationState.READY)
+        {
+            Debug.Log("Cooked item ready to be recieved!");
+        }
+    }
+
+    private void StartCooking()
+    {
+        //Running on server
+
+        //Determine which item will be cooked
+        Debug.Log("Cooking in progress....");
+        //Wait for cook time to be completed => for testing 3seconds
+
+        Invoke("CompleteCooking", 3.15f);
+    }
+
+    private void CompleteCooking()
+    {
+        //After 3 seconds, give the cooked item as ready
+        CookState.Value = StationState.READY;
     }
 
     #endregion

@@ -1,3 +1,4 @@
+using System;
 using UnityEngine;
 using UnityEngine.UI;
 
@@ -10,6 +11,8 @@ public class RadialFiller : MonoBehaviour
     [SerializeField] private Transform content;
 
     public bool startFill;
+
+    public Action OnFillComplete;
 
     public void SetMaxTime(float _maxTime) 
     {
@@ -48,6 +51,7 @@ public class RadialFiller : MonoBehaviour
         if (radialImage.fillAmount == 1.0f)
         {
             //Debug.Log("Radial Filled");
+            OnFillComplete?.Invoke();
         }
         else
         {
