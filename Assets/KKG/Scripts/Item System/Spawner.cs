@@ -1,6 +1,7 @@
 using KrazyKrakenGames.Interactables;
 using Unity.Netcode;
 using UnityEngine;
+using UnityEngine.Events;
 
 public class Spawner : NetworkBehaviour,ISpawnable
 {
@@ -11,7 +12,13 @@ public class Spawner : NetworkBehaviour,ISpawnable
     [SerializeField] private NetworkObject spawnedInstance;
 
     [SerializeField] private float spawnCounter = 0;
-    [SerializeField] private float spawnTimer = 5f; 
+    [SerializeField] private float spawnTimer = 5f;
+
+    [Tooltip("Set to false for spawners which are not timer based")]
+    [SerializeField] private bool shouldUseTimer = true;
+
+    //Fired when the object is picked for the first time
+    public UnityEvent OnObjectPickedEvent;
 
     public void SpawnEntity()
     {
@@ -26,15 +33,37 @@ public class Spawner : NetworkBehaviour,ISpawnable
         }
     }
 
+    public NetworkObject SpawnEntityWithPrefab(GameObject prefab)
+    {
+        if (IsServer)
+        {
+            var obj = Instantiate(prefab, prefab.transform.position, Quaternion.identity);
+            var netObject = obj.GetComponent<NetworkObject>();
+            netObject.Spawn(true);
+
+            spawnedInstance = netObject;
+
+            RegisterEvent();
+
+            return netObject;
+        }
+
+        return null;
+    }
+
     private void RegisterEvent()
     {
-        spawnedInstance.
-            GetComponent<BaseInteractableObject>().
-            State.OnValueChanged += OnSpawnedInstanceStateChanged;
+        var baseIntObj = spawnedInstance.
+            GetComponent<BaseInteractableObject>();
+        baseIntObj.State.OnValueChanged += OnSpawnedInstanceStateChanged;
+
+        baseIntObj.SetSpawner(this);
     }
 
     private void UnregisterEvent()
     {
+        OnObjectPickedEvent?.Invoke();
+
         spawnedInstance.
            GetComponent<BaseInteractableObject>().
            State.OnValueChanged -= OnSpawnedInstanceStateChanged;
@@ -45,7 +74,6 @@ public class Spawner : NetworkBehaviour,ISpawnable
         if (curr == ObjectState.PICK)
         {
             //Object was picked, remove spawned Instance
-
             UnregisterEvent();
             OnObjectPicked();
         }
@@ -53,6 +81,7 @@ public class Spawner : NetworkBehaviour,ISpawnable
 
     public override void OnNetworkSpawn()
     {
+        if (instancePrefab == null) return;
         if(spawnedInstance == null)
         {
             SpawnEntity();
@@ -61,11 +90,17 @@ public class Spawner : NetworkBehaviour,ISpawnable
 
     public void OnObjectPicked()
     {
+        var baseIntObj = spawnedInstance.
+            GetComponent<BaseInteractableObject>();
+
+        baseIntObj.SetSpawner(null);
         spawnedInstance = null;
     }
 
     private void Update()
     {
+        if (!shouldUseTimer) return;
+
         if (IsServer)
         {
             if (spawnedInstance == null)

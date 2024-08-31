@@ -11,7 +11,10 @@ public class StationCanvas : MonoBehaviour
     private void Start()
     {
         statusObject.SetActive(false);
+
         statusFiller = statusObject.GetComponent<RadialFiller>();
+
+
     }
 
     public void PopulateIngredient(string ingredientName)
@@ -23,11 +26,23 @@ public class StationCanvas : MonoBehaviour
     {
         statusObject.SetActive(true);
 
+        if (statusFiller != null)
+        {
+            statusFiller.SetMaxTime(timer);
+            statusFiller.StartFill();
 
-        statusFiller.SetMaxTime(timer);
-        statusFiller.StartFill();
+            statusFiller.OnFillComplete += OnStatusFillCompleted;
+        }
+    }
 
-        statusFiller.OnFillComplete += OnStatusFillCompleted;
+    public void Reset()
+    {
+        statusObject.SetActive(false);
+
+        if (statusFiller != null)
+        {
+            statusFiller.Reset();
+        }
     }
 
     private void OnStatusFillCompleted()

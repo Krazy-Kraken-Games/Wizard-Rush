@@ -1,4 +1,5 @@
 using KrazyKrakenGames.Interactables;
+using KrazyKrakenGames.LearningNetcode;
 using KrazyKrakenGames.UI;
 using System;
 using Unity.Collections;
@@ -105,16 +106,24 @@ public class PickUpHolder : NetworkBehaviour
 
     public void OnPickUpInitiated(BaseInteractableObject interactableObject)
     {
-        if (interactableObject != null)
+        if (hasObject.Value)
         {
-            //Check if already carrying an item
-            if (hasObject.Value)
+            if(interactableObject == null)
             {
-                Vector3 dropLocation = transform.position + (transform.forward * 2f);
-                //Drop
-                interactableObject.Drop(NetworkObjectId, dropLocation);
+                //A bug that is happening, Get Interactable object on its own
+                var held = NetGameManager.instance.GetNetworkObjectById(heldObject.Value.gameObjectID);
+                interactableObject = held.GetComponent<BaseInteractableObject>();
             }
-            else
+
+
+            //Already carrying something, drop it
+            Vector3 dropLocation = transform.position + (transform.forward * 2f);
+            //Drop
+            interactableObject.Drop(NetworkObjectId, dropLocation);
+        }
+        else
+        {
+            if (interactableObject != null)
             {
                 interactableObject.Interact(NetworkObjectId);
             }
@@ -190,7 +199,7 @@ public class PickUpHolder : NetworkBehaviour
 
     public void SetPickedObject(string pickedItem, ulong itemID)
     {
-        Debug.Log($"{pickedItem} has been picked");
+        Debug.Log($"{pickedItem} has been picked by player");
 
         if (!initialized)
         {

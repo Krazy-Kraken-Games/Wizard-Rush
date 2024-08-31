@@ -28,7 +28,12 @@ namespace KrazyKrakenGames.Interactables
                 NetworkVariableWritePermission.Server);
 
         //Turn this to use data from scriptable object
-        public string objectName;
+        public IngredientDataSO ingredientData;
+
+
+        //Who spawned this object
+        [SerializeField] protected ISpawnable spawnedParent;
+
 
         public override void OnNetworkSpawn()
         {
@@ -59,7 +64,7 @@ namespace KrazyKrakenGames.Interactables
 
         public virtual void Interact(ulong initiatorID)
         {
-            Debug.Log($"{objectName} is interacted with by {initiatorID}");
+            Debug.Log($"{ingredientData} is interacted with by {initiatorID}");
 
             if(State.Value == ObjectState.DROP)
             {
@@ -84,7 +89,7 @@ namespace KrazyKrakenGames.Interactables
             var initiator = NetGameManager.instance.GetNetworkObjectById(initiatorID);
 
             var picker = initiator.gameObject.GetComponent<PickUpHolder>();
-            picker.SetPickedObject(objectName,NetworkObjectId);
+            picker.SetPickedObject(ingredientData.ingredientName, NetworkObjectId);
 
             State.Value = ObjectState.PICK;
         }
@@ -116,6 +121,12 @@ namespace KrazyKrakenGames.Interactables
         private void FeedServerRpc()
         {
             State.Value = ObjectState.FEED;
+        }
+
+        public void SetSpawner(ISpawnable _spawner)
+        {
+            Debug.Log($"{gameObject.name} spawned parent is {_spawner}");
+            spawnedParent = _spawner;
         }
     }
 }

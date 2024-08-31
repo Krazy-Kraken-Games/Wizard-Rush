@@ -1,6 +1,5 @@
 using KrazyKrakenGames.Interactables;
 using KrazyKrakenGames.LearningNetcode;
-using System.Collections;
 using Unity.Collections;
 using Unity.Netcode;
 using UnityEngine;
@@ -22,14 +21,24 @@ public class Station : NetworkBehaviour, ITriggerable, IStoring, ICooking
     [SerializeField]
     public NetworkList<IngredientData> currentIngredients;
 
-    //Dummy will be removed when actual ingredient data structure is created
-    [SerializeField] private string IngredientNameTest;
+    //Spawner reference
+    [SerializeField] private Spawner spawner;
 
     [SerializeField] private StationCanvas stationCanvas;
 
     //Cook handling
     [SerializeField] private NetworkVariable<StationState> CookState
         = new NetworkVariable<StationState>(StationState.READY,
+            NetworkVariableReadPermission.Everyone,
+            NetworkVariableWritePermission.Server);
+
+    [SerializeField]
+    private NetworkVariable<IngredientData> collectItem
+        = new NetworkVariable<IngredientData>(new IngredientData
+            { 
+                ingredientName = new FixedString128Bytes(),
+                gameObjectID = 20000
+            },
             NetworkVariableReadPermission.Everyone,
             NetworkVariableWritePermission.Server);
 
@@ -48,6 +57,8 @@ public class Station : NetworkBehaviour, ITriggerable, IStoring, ICooking
         currentIngredients.OnListChanged += OnIngredientListChanged;
 
         CookState.OnValueChanged += OnCookValueChangedHandler;
+
+        collectItem.OnValueChanged += OnCollectItemValueHandler;
     }
 
     public override void OnNetworkDespawn()
@@ -58,12 +69,18 @@ public class Station : NetworkBehaviour, ITriggerable, IStoring, ICooking
 
         CookState.OnValueChanged -= OnCookValueChangedHandler;
 
+        collectItem.OnValueChanged -= OnCollectItemValueHandler;
+
     }
 
     public void AddItem(FixedString128Bytes item, ulong feederID, ulong itemID)
     {
-        //Lets add the items without any checks
-        AddItemServerRpc(item,feederID,itemID);
+        //If the 
+        if (CookState.Value == StationState.READY)
+        {
+            //Lets add the items without any checks
+            AddItemServerRpc(item, feederID, itemID);
+        }
     }
 
     [ServerRpc(RequireOwnership = false)]
@@ -94,8 +111,6 @@ public class Station : NetworkBehaviour, ITriggerable, IStoring, ICooking
 
     private void OnAddedIngredientChange(IngredientData old, IngredientData curr)
     {
-        IngredientNameTest = curr.ingredientName.ToString();
-
         if (stationCanvas != null)
         {
             stationCanvas.PopulateIngredient(curr.ingredientName.ToString());
@@ -162,9 +177,20 @@ public class Station : NetworkBehaviour, ITriggerable, IStoring, ICooking
                 stationCanvas.StationCooking(3f);
             }
         }
-        else if(newState == StationState.READY)
+        else if(newState == StationState.COLLECT)
         {
             Debug.Log("Cooked item ready to be recieved!");
+        }
+        else if(newState == StationState.READY)
+        {
+            //Check if prev state was collect
+            if(prev == StationState.COLLECT)
+            {
+                if(stationCanvas != null)
+                {
+                    stationCanvas.Reset();
+                }
+            }
         }
     }
 
@@ -173,17 +199,74 @@ public class Station : NetworkBehaviour, ITriggerable, IStoring, ICooking
         //Running on server
 
         //Determine which item will be cooked
+        currentIngredients.Clear();
+        addedIngredient.Value =
+            new IngredientData
+            {
+                ingredientName = new FixedString128Bytes(),
+                gameObjectID = 10000
+            };
+
         Debug.Log("Cooking in progress....");
         //Wait for cook time to be completed => for testing 3seconds
 
         Invoke("CompleteCooking", 3.15f);
     }
 
-    private void CompleteCooking()
+    [ServerRpc(RequireOwnership = false)]
+    private void CompleteCookingServerRpc()
     {
         //After 3 seconds, give the cooked item as ready
-        CookState.Value = StationState.READY;
+        CookState.Value = StationState.COLLECT;
+
+        var objPrefab = CookingManager.Instance.cookPrefab;
+        var ingredient = objPrefab.GetComponent<Ingredient>();
+
+
+        var spawnedInstance = spawner.SpawnEntityWithPrefab(objPrefab);
+
+        collectItem.Value =
+            new IngredientData
+            {
+                ingredientName = ingredient.ingredientData.ingredientName,
+                gameObjectID = spawnedInstance.NetworkObjectId
+            };
+    }
+
+    private void CompleteCooking()
+    {
+        CompleteCookingServerRpc();
     }
 
     #endregion
+
+    #region Collect Item Handling
+
+    public void OnObjectCollected()
+    {
+        Debug.Log($"Object {collectItem.Value.ingredientName} was collected from {gameObject.name}");
+        ObjectCollectedServerRpc();
+    }
+
+    [ServerRpc(RequireOwnership = false)]
+    public void ObjectCollectedServerRpc()
+    {
+        //Object was collected, set collect Item to null/default and 
+        //set state to ready for cooking
+        collectItem.Value = new IngredientData
+        {
+            ingredientName = new FixedString128Bytes(),
+            gameObjectID = 20000
+        };
+
+        CookState.Value = StationState.READY;
+    }
+
+    private void OnCollectItemValueHandler(IngredientData prev, IngredientData curr)
+    {
+        
+    }
+
+    #endregion
+
 }

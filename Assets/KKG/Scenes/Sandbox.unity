@@ -1251,6 +1251,7 @@ GameObject:
   - component: {fileID: 1459402796}
   - component: {fileID: 1459402799}
   - component: {fileID: 1459402800}
+  - component: {fileID: 1459402801}
   m_Layer: 0
   m_Name: NetworkManager
   m_TagString: Untagged
@@ -1369,6 +1370,20 @@ MonoBehaviour:
   objectsToSpawn:
   - {fileID: 174656539593619040, guid: c13a046642ae07a49b0b142506450acb, type: 3}
   - {fileID: 174656539593619040, guid: 7cd481237e818d44d979b38df18114a4, type: 3}
+--- !u!114 &1459402801
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1459402795}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 91ce81617e26fb543a649e29db166481, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  dummyCookRes: {fileID: 174656539593619040, guid: dd0061da71424ad46b562185823767ce,
+    type: 3}
 --- !u!1 &1558404750
 GameObject:
   m_ObjectHideFlags: 0

@@ -216,9 +216,8 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   State:
     m_InternalValue: 0
-  objectName: Lazarus
-  isPicked: 0
-  type: 0
+  ingredientData: {fileID: 11400000, guid: 0bdc9c248b4413c4597db9b8c6f46f54, type: 2}
+  type: 1
   networkType:
     m_InternalValue: 1
 --- !u!1001 &4951181473973380451
