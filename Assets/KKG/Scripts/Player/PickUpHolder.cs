@@ -170,9 +170,22 @@ public class PickUpHolder : NetworkBehaviour
             //Only feed ingredient if player is carrying an object
             Debug.Log("Submitting held object into the station");
             var storing = nearByStation.GetComponent<IStoring>();
-            storing.AddItem(heldObject.Value.ingredientName,
-                NetworkObjectId,
-                heldObject.Value.gameObjectID);
+
+            //Check if allowed
+            bool allowed = storing.CheckAllowed(heldObject.Value.ingredientType);
+
+            if (allowed)
+            {
+                storing.AddItem(heldObject.Value,
+                    NetworkObjectId,
+                    heldObject.Value.gameObjectID);
+
+            }
+            else
+            {
+                //Ingredient type is not accepted
+                Debug.Log("Pratik this ingredient is not accepted");
+            }
         }
         else
         {
@@ -197,22 +210,29 @@ public class PickUpHolder : NetworkBehaviour
     }
 
 
-    public void SetPickedObject(string pickedItem, ulong itemID)
+    public void SetPickedObject(IngredientDataSO pickedItem, ulong itemID)
     {
-        Debug.Log($"{pickedItem} has been picked by player");
+        Debug.Log($"{pickedItem.ingredientName} has been picked by player");
 
         if (!initialized)
         {
             Initialization();
         }
 
-        SetPickedObjectServerRpc(pickedItem, itemID);
+        SetPickedObjectServerRpc(pickedItem.ingredientName, itemID,pickedItem.ingredientType);
     }
 
     [ServerRpc(RequireOwnership = false)]
-    public void SetPickedObjectServerRpc(string pickedItem,ulong itemId)
+    public void SetPickedObjectServerRpc
+        (string ingredientName,ulong itemId, IngredientType ingredientType)
     {
-        heldObject.Value = new IngredientData { ingredientName = pickedItem , gameObjectID = itemId};
+        heldObject.Value = new IngredientData 
+        {
+            ingredientName = ingredientName, 
+            gameObjectID = itemId,
+            ingredientType = ingredientType
+        };
+
         hasObject.Value = true;
 
         NetworkState.Value = PickUpHolderState.VISIBLE;

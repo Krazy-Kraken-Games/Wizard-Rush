@@ -6,10 +6,13 @@ public struct IngredientData : INetworkSerializable, System.IEquatable<Ingredien
 {
     public FixedString128Bytes ingredientName;
     public ulong gameObjectID;  //Network Object ID
+    public IngredientType ingredientType;
 
     public bool Equals(IngredientData other)
     {
-       return ingredientName == other.ingredientName && gameObjectID == other.gameObjectID;  
+       return ingredientName == other.ingredientName 
+            && gameObjectID == other.gameObjectID
+            && ingredientType == other.ingredientType;  
     }
 
     public void NetworkSerialize<T>(BufferSerializer<T> serializer) where T : IReaderWriter
@@ -18,14 +21,15 @@ public struct IngredientData : INetworkSerializable, System.IEquatable<Ingredien
         {
             var reader = serializer.GetFastBufferReader();
             reader.ReadValueSafe(out ingredientName);
-            //serializer.SerializeValue(ref gameObjectID);
             reader.ReadValueSafe(out gameObjectID);
+            reader.ReadValueSafe(out ingredientType);
         }
         else
         {
             var writer = serializer.GetFastBufferWriter();
             writer.WriteValueSafe(ingredientName);
             writer.WriteValueSafe(gameObjectID);
+            writer.WriteValueSafe(ingredientType);
         }
     }
 }

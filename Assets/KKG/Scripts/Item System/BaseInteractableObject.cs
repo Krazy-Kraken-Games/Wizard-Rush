@@ -89,7 +89,7 @@ namespace KrazyKrakenGames.Interactables
             var initiator = NetGameManager.instance.GetNetworkObjectById(initiatorID);
 
             var picker = initiator.gameObject.GetComponent<PickUpHolder>();
-            picker.SetPickedObject(ingredientData.ingredientName, NetworkObjectId);
+            picker.SetPickedObject(ingredientData, NetworkObjectId);
 
             State.Value = ObjectState.PICK;
         }

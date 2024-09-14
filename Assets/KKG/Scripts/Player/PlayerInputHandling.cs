@@ -1,5 +1,4 @@
 using KrazyKrakenGames.Interactables;
-using KrazyKrakenGames.Interfaces.Objects;
 using System;
 using Unity.Netcode;
 using UnityEngine;

@@ -60,7 +60,7 @@ public class NetworkPlayerMonkey : NetworkBehaviour
         // move the player
         controller.Move(moveDirection.normalized * (targetSpeed * Time.deltaTime));
 
-        RotateModel(moveHorizontal, moveVertical);
+        NewModelRotation(moveHorizontal, moveVertical);
     }
 
     private void RotateModel(float moveHorizontal, float moveVertical)
@@ -87,7 +87,15 @@ public class NetworkPlayerMonkey : NetworkBehaviour
         model.transform.rotation = targetRotation;
     }
 
-
+    private void NewModelRotation(float moveHorizontal, float moveVertical)
+    {
+        Vector3 moveVector3 = new Vector3(moveHorizontal,0, moveVertical);
+        if (moveVector3 != Vector3.zero)
+        {
+            Quaternion targetRotation = Quaternion.LookRotation(moveVector3);
+            model.transform.rotation = targetRotation;
+        }
+    }
 
 
 public override void OnNetworkSpawn()

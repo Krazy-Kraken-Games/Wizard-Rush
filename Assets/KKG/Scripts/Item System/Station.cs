@@ -27,6 +27,8 @@ public class Station : NetworkBehaviour, ITriggerable, IStoring, ICooking
     [SerializeField] private StationCanvas stationCanvas;
 
     //Cook handling
+    [SerializeField] private IngredientType allowedType;
+
     [SerializeField] private NetworkVariable<StationState> CookState
         = new NetworkVariable<StationState>(StationState.READY,
             NetworkVariableReadPermission.Everyone,
@@ -73,15 +75,26 @@ public class Station : NetworkBehaviour, ITriggerable, IStoring, ICooking
 
     }
 
-    public void AddItem(FixedString128Bytes item, ulong feederID, ulong itemID)
+    #region IStoring Interface Method Handling
+    public bool CheckAllowed(IngredientType _type)
     {
-        //If the 
+        if (_type == allowedType) return true;
+
+        return false;
+    }
+
+    public void AddItem(IngredientData data, ulong feederID, ulong itemID)
+    {
         if (CookState.Value == StationState.READY)
         {
+            
+
             //Lets add the items without any checks
-            AddItemServerRpc(item, feederID, itemID);
+            AddItemServerRpc(data.ingredientName, feederID, itemID);
         }
     }
+
+    #endregion
 
     [ServerRpc(RequireOwnership = false)]
     private void AddItemServerRpc(FixedString128Bytes item, ulong feederID,ulong itemID)
@@ -266,6 +279,7 @@ public class Station : NetworkBehaviour, ITriggerable, IStoring, ICooking
     {
         
     }
+
 
     #endregion
 
