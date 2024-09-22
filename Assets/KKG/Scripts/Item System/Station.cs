@@ -78,17 +78,13 @@ public class Station : NetworkBehaviour, ITriggerable, IStoring, ICooking
     #region IStoring Interface Method Handling
     public bool CheckAllowed(IngredientType _type)
     {
-        if (_type == allowedType) return true;
-
-        return false;
+        return allowedType == _type;
     }
 
     public void AddItem(IngredientData data, ulong feederID, ulong itemID)
     {
         if (CookState.Value == StationState.READY)
         {
-            
-
             //Lets add the items without any checks
             AddItemServerRpc(data.ingredientName, feederID, itemID);
         }
