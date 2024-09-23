@@ -25,23 +25,32 @@ public class NetworkPlayerMonkey : NetworkBehaviour
     [SerializeField] private GameObject model;
 
 
+    #region Player State Handling
+    [Space(10)]
+    [Header("Player State Handler References")]
+    [SerializeField] private PlayerStateHandler playerStateHandler;
+    [SerializeField] private bool inputAllowed;
+    #endregion
+
+
+    #region UNITY_METHOD_CALLS
+
+    private void Awake()
+    {
+        playerStateHandler = GetComponent<PlayerStateHandler>();
+    }
 
     private void Update()
     {
         if (!IsOwner) return;
 
+        if(!inputAllowed) return;
+
         Move();
     }
 
-    private void Locomotion()
-    {
-        float horizontal = Input.GetAxis("Horizontal");
-        float vertical = Input.GetAxis("Vertical");
+    #endregion
 
-        Vector3 moveVector = new Vector3(horizontal, 0f, vertical);
-
-        transform.position += moveVector * 3f * Time.deltaTime;
-    }
 
     private void Move()
     {
@@ -114,12 +123,17 @@ public override void OnNetworkSpawn()
         }
 
         PopulatePlayerUI();
+
+        playerStateHandler.State.OnValueChanged += OnPlayerStateChangedHandler;
+        OnPlayerStateLogicHandler(playerStateHandler.State.Value);
     }
 
     public override void OnNetworkDespawn()
     {
         base.OnNetworkDespawn();
         currentPlayerData.OnValueChanged -= OnPlayerDataChanged;
+
+        playerStateHandler.State.OnValueChanged -= OnPlayerStateChangedHandler;
     }
 
     private void OnPlayerDataChanged(PlayerData _previousData, PlayerData _currentValue)
@@ -132,4 +146,18 @@ public override void OnNetworkSpawn()
     {
         displayPlayerCanvas.PopulateDisplay(currentPlayerData.Value);
     }
+
+    #region Player State Change Handler
+
+    private void OnPlayerStateChangedHandler(PlayerState prev, PlayerState newState)
+    {
+        OnPlayerStateLogicHandler(newState);
+    }
+
+    private void OnPlayerStateLogicHandler(PlayerState _state)
+    {
+        inputAllowed = _state != PlayerState.CANNON;
+    }
+
+    #endregion
 }

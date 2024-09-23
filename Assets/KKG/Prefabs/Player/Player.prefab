@@ -99,6 +99,7 @@ GameObject:
   - component: {fileID: 8762469657493039925}
   - component: {fileID: 5048142858765916483}
   - component: {fileID: -7536280356338592592}
+  - component: {fileID: 7276121612000060775}
   m_Layer: 0
   m_Name: Player
   m_TagString: Player
@@ -532,6 +533,7 @@ MonoBehaviour:
           byte0124: 0
           byte0125: 0
       gameObjectID: 1000
+      ingredientType: 0
   hasObject:
     m_InternalValue: 0
   heldObjectName: 
@@ -543,6 +545,8 @@ MonoBehaviour:
   n_spawnedPickMesh: {fileID: 0}
   playerInput: {fileID: 0}
   displayCanvas: {fileID: 8255246472167483368}
+  playerStateHandler: {fileID: 0}
+  inputAllowed: 0
 --- !u!114 &-7536280356338592592
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -558,6 +562,20 @@ MonoBehaviour:
   interactableObject: {fileID: 0}
   nearByStation: {fileID: 0}
   pickUpHolder: {fileID: 5048142858765916483}
+--- !u!114 &7276121612000060775
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 2946354335335332356}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 39ac9cd74e4ac8d42bbf8821446bd918, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  State:
+    m_InternalValue: 0
 --- !u!1 &4243599654721292992
 GameObject:
   m_ObjectHideFlags: 0

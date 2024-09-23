@@ -54,10 +54,20 @@ public class PickUpHolder : NetworkBehaviour
 
     [SerializeField] private PlayerCanvas displayCanvas;
 
+    #region Player State Handling
+
+    [Space(10)]
+    [Header("Player State Handler References")]
+    [SerializeField] private PlayerStateHandler playerStateHandler;
+    [SerializeField] private bool inputAllowed;
+
+    #endregion
+
 
     private void Awake()
     {
         playerInput = GetComponent<PlayerInputHandling>();
+        playerStateHandler = GetComponent<PlayerStateHandler>();
         NetworkState.OnValueChanged += OnStateValueChangedListener;
     }
 
@@ -68,7 +78,9 @@ public class PickUpHolder : NetworkBehaviour
         playerInput.OnActionEventHandler += OnPlayerActionKeyHandler;
 
         heldObject.OnValueChanged += OnHeldObjectChangedHandler;
-        
+
+        playerStateHandler.State.OnValueChanged += OnPlayerStateChangedHandler;
+        OnPlayerStateLogicHandler(playerStateHandler.State.Value);
     }
 
     public override void OnNetworkDespawn()
@@ -80,6 +92,8 @@ public class PickUpHolder : NetworkBehaviour
         playerInput.OnActionEventHandler -= OnPlayerActionKeyHandler;
 
         heldObject.OnValueChanged -= OnHeldObjectChangedHandler;
+
+        playerStateHandler.State.OnValueChanged -= OnPlayerStateChangedHandler;
 
     }
     private void Initialization()
@@ -184,16 +198,21 @@ public class PickUpHolder : NetworkBehaviour
             else
             {
                 //Ingredient type is not accepted
-                Debug.Log("Pratik this ingredient is not accepted");
             }
         }
         else
         {
             //The player isnt carrying anything, it wants to trigger cook on the station
-            Debug.Log("Initiate cooking?");
+            if (nearByStation.TryGetComponent<ICooking>(out var cookingStation))
+            {
+                cookingStation.Cook();
+            }
 
-            var cookingStation = nearByStation.GetComponent<ICooking>();
-            cookingStation.Cook();
+            //If its not a cooking station, maybe its a cannon to be interacted with, control
+            else if(nearByStation.TryGetComponent<IControlBody>(out var controlBody))
+            {
+                controlBody.TakeControl(NetworkObjectId);
+            }
         }
     }
 
@@ -260,5 +279,19 @@ public class PickUpHolder : NetworkBehaviour
         displayCanvas.PopulateObjectPick(curr.ingredientName.ToString());
     }
 
+
+    #region Player State Change Handler
+
+    private void OnPlayerStateChangedHandler(PlayerState prev, PlayerState newState)
+    {
+        OnPlayerStateLogicHandler(newState);
+    }
+
+    private void OnPlayerStateLogicHandler(PlayerState _state)
+    {
+        inputAllowed = _state != PlayerState.CANNON;
+    }
+
+    #endregion
 
 }
