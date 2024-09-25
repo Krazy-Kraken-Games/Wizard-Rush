@@ -1,7 +1,6 @@
 using KrazyKrakenGames.LearningNetcode;
 using Unity.Netcode;
 using UnityEngine;
-using static UnityEditor.Progress;
 
 public class Cannon : NetworkBehaviour, ITriggerable, IStoring,IControlBody
 {
